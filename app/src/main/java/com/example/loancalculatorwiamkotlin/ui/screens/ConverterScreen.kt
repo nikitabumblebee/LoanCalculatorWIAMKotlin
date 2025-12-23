@@ -177,21 +177,21 @@ fun ConverterScreen(
                         text = "Currency rate: ${state.loan.creditRate.formatAmount()}%",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF134252)
+                        color = MaterialTheme.colorScheme.onBackground
                     )
 
                     Text(
                         text = "Return date: ${state.loan.returnDate.toDayMonthAndYear()}",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF134252)
+                        color = MaterialTheme.colorScheme.onBackground
                     )
 
                     Text(
                         text = "Return amount: ${state.loan.returnAmount.formatAmount()}",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF134252)
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
             }

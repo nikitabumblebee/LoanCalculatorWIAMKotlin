@@ -37,7 +37,7 @@ fun ConverterSliderView(
                 text = title,
                 fontSize = 18.sp,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
-                color = Color(0xFF134252)
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
