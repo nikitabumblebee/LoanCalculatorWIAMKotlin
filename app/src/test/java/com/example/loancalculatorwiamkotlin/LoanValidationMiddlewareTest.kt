@@ -1,5 +1,6 @@
 package com.example.loancalculatorwiamkotlin
 
+import com.example.loancalculatorwiamkotlin.data.dto.LoanRequest
 import com.example.loancalculatorwiamkotlin.data.dto.LoanResponse
 import com.example.loancalculatorwiamkotlin.data.validation.LoanValidationMiddleware
 import com.example.loancalculatorwiamkotlin.data.network.NetworkingService
@@ -29,7 +30,8 @@ class LoanValidationMiddlewareTest {
         mockNetworkingService = mockk<NetworkingService>(relaxed = true)
         mockStore = mockk<Store<LoanState, LoanAction>>(relaxed = true)
 
-        middleware = LoanValidationMiddleware(mockNetworkingService)
+        val mockContext = mockk<android.content.Context>(relaxed = true)
+        middleware = LoanValidationMiddleware(mockNetworkingService, mockContext)
     }
 
     @After
@@ -111,7 +113,7 @@ class LoanValidationMiddlewareTest {
 
     @Test
     fun `SubmitLoanSuccess - no re-dispatch`() = runTest {
-        val action = LoanAction.SubmitLoanSuccess(LoanResponse("123"))
+        val action = LoanAction.SubmitLoanSuccess(LoanResponse(101))
         val state = createTestState()
 
         middleware.process(mockStore, state, action)

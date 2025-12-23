@@ -27,19 +27,19 @@ class NetworkingServiceTest {
 
     @Test
     fun `sendRequest mock - returns LoanResponse with id`() = runTest {
-        val expectedResponse = LoanResponse("123")
+        val expectedResponse = LoanResponse(101)
         coEvery { mockService.sendRequest(any()) } returns expectedResponse
 
         val response = mockService.sendRequest("""{"amount":10000}""")
 
-        assertEquals("123", response.id)
+        assertEquals(101, response.id)
         coVerify { mockService.sendRequest(any()) }
     }
 
     @Test
     fun `sendRequest mock - called with correct JSON`() = runTest {
         val jsonBody = """{"amount":10000,"period":14}"""
-        coEvery { mockService.sendRequest(jsonBody) } returns LoanResponse("456")
+        coEvery { mockService.sendRequest(jsonBody) } returns LoanResponse(456)
 
         mockService.sendRequest(jsonBody)
 
