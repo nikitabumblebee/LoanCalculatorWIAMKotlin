@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class LoanResponse(
-    val id: String
+    val id: Int
 )
