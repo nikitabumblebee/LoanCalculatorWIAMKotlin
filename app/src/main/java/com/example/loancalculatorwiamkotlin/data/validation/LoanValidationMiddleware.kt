@@ -12,7 +12,6 @@ import com.example.loancalculatorwiamkotlin.redux.Store
 import kotlinx.coroutines.delay
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,9 +32,7 @@ class LoanValidationMiddleware(
         action: LoanAction
     ) {
         when (action) {
-            is LoanAction.CheckInternet -> {
-                Log.d("LoanValidationMiddleware", "CheckInternet action received, not processing")
-            }
+            is LoanAction.CheckInternet -> {}
 
             is LoanAction.UpdateAmount -> {
                 if (action.amount < Constants.MIN_AMOUNT || action.amount > Constants.MAX_AMOUNT) {
@@ -43,9 +40,7 @@ class LoanValidationMiddleware(
                 }
             }
 
-            is LoanAction.UpdateDays -> {
-                Log.d("LoanValidationMiddleware", "UpdateDays: ${action.days} processed")
-            }
+            is LoanAction.UpdateDays -> {}
 
             is LoanAction.StartProcessing -> {
                 saveLastData(action.loan)
@@ -58,33 +53,19 @@ class LoanValidationMiddleware(
                 }
             }
 
-            is LoanAction.SubmitLoanFailure -> {
-                Log.d("LoanValidationMiddleware", "SubmitLoanFailure received")
-            }
+            is LoanAction.SubmitLoanFailure -> {}
 
-            is LoanAction.SubmitLoanSuccess -> {
-                Log.d("LoanValidationMiddleware", "SubmitLoanSuccess received")
-            }
+            is LoanAction.SubmitLoanSuccess -> {}
 
-            is LoanAction.Reset -> {
-                Log.d("LoanValidationMiddleware", "Reset action received")
-            }
+            is LoanAction.Reset -> {}
 
-            LoanAction.InternetConnectionFailed -> {
-                Log.d("LoanValidationMiddleware", "InternetConnectionFailed")
-            }
+            LoanAction.InternetConnectionFailed -> {}
 
-            LoanAction.InternetConnectionRestored -> {
-                Log.d("LoanValidationMiddleware", "InternetConnectionRestored")
-            }
+            LoanAction.InternetConnectionRestored -> {}
 
-            LoanAction.ResetInternetNotification -> {
-                Log.d("LoanValidationMiddleware", "ResetInternetNotification")
-            }
+            LoanAction.ResetInternetNotification -> {}
 
-            LoanAction.IncorrectAmount -> {
-                Log.d("LoanValidationMiddleware", "IncorrectAmount")
-            }
+            LoanAction.IncorrectAmount -> {}
         }
     }
 
@@ -115,7 +96,7 @@ class LoanValidationMiddleware(
     }
 
     private fun saveLastData(loanModel: LoanModel) {
-        
+
         // Здесь позже добавишь сохранение в SharedPreferences через отдельный helper
     }
 }

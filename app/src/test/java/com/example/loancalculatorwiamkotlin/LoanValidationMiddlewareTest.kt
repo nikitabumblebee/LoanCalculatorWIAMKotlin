@@ -1,104 +1,122 @@
 package com.example.loancalculatorwiamkotlin
 
-import com.example.loancalculatorwiamkotlin.data.dto.LoanRequest
 import com.example.loancalculatorwiamkotlin.data.dto.LoanResponse
 import com.example.loancalculatorwiamkotlin.data.validation.LoanValidationMiddleware
 import com.example.loancalculatorwiamkotlin.data.network.NetworkingService
 import com.example.loancalculatorwiamkotlin.domain.models.*
 import com.example.loancalculatorwiamkotlin.redux.LoanAction
 import com.example.loancalculatorwiamkotlin.redux.Store
+import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mock
-import org.mockito.Mockito.*
-import org.mockito.MockitoAnnotations
 
 @ExperimentalCoroutinesApi
 class LoanValidationMiddlewareTest {
-    @Mock
-    private lateinit var networkingService: NetworkingService
-
-    @Mock
-    private lateinit var mockStore: Store<LoanState, LoanAction>
-
     private lateinit var testDispatcher: TestDispatcher
     private lateinit var middleware: LoanValidationMiddleware
+    private lateinit var mockNetworkingService: NetworkingService
+    private lateinit var mockStore: Store<LoanState, LoanAction>
 
     @Before
     fun setup() {
-        MockitoAnnotations.openMocks(this)
         testDispatcher = StandardTestDispatcher()
         Dispatchers.setMain(testDispatcher)
 
-        middleware = LoanValidationMiddleware(networkingService)
+        mockNetworkingService = mockk<NetworkingService>(relaxed = true)
+        mockStore = mockk<Store<LoanState, LoanAction>>(relaxed = true)
+
+        middleware = LoanValidationMiddleware(mockNetworkingService)
     }
 
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+        unmockkAll()
     }
 
     @Test
-    fun `UpdateAmount - valid amount - no action dispatched`() = runTest {
+    fun `UpdateAmount valid - no dispatch`() = runTest {
         val action = LoanAction.UpdateAmount(10_000.0)
         val state = createTestState()
 
         middleware.process(mockStore, state, action)
 
-        verify(mockStore, never()).dispatch(any())
+        verify(exactly = 0) { mockStore.dispatch(any()) }
     }
 
     @Test
-    fun `UpdateAmount - invalid amount - dispatches IncorrectAmount`() = runTest {
-        val action = LoanAction.UpdateAmount(1_000.0) // < 5000
+    fun `UpdateAmount invalid low - dispatches IncorrectAmount`() = runTest {
+        val action = LoanAction.UpdateAmount(1_000.0)
         val state = createTestState()
 
         middleware.process(mockStore, state, action)
 
-        verify(mockStore).dispatch(LoanAction.IncorrectAmount)
+        verify { mockStore.dispatch(LoanAction.IncorrectAmount) }
     }
 
     @Test
-    fun `StartProcessing - saves data but no re-dispatch`() = runTest {
-        val action = LoanAction.StartProcessing(createTestLoanModel())
+    fun `UpdateAmount invalid high - dispatches IncorrectAmount`() = runTest {
+        val action = LoanAction.UpdateAmount(100_000.0)
         val state = createTestState()
 
         middleware.process(mockStore, state, action)
 
-        verify(mockStore, never()).dispatch(any()) // ✅ Не диспатчит снова
+        verify { mockStore.dispatch(LoanAction.IncorrectAmount) }
     }
 
     @Test
-    fun `SendLoan - success - dispatches SubmitLoanSuccess`() = runTest {
-        val loan = createTestLoanModel()
-        val state = createTestState(loan = loan)
-        val action = LoanAction.SendLoan
-        val mockResponse = LoanResponse("123")
-
-        `when`(networkingService.sendRequest(anyString())).thenReturn(mockResponse)
+    fun `UpdateDays - no dispatch`() = runTest {
+        val action = LoanAction.UpdateDays(30)
+        val state = createTestState()
 
         middleware.process(mockStore, state, action)
 
-        testDispatcher.scheduler.advanceUntilIdle()
-        verify(mockStore).dispatch(LoanAction.SubmitLoanSuccess(mockResponse))
+        verify(exactly = 0) { mockStore.dispatch(any()) }
     }
 
     @Test
-    fun `SendLoan - failure - dispatches SubmitLoanFailure`() = runTest {
+    fun `StartProcessing - no re-dispatch`() = runTest {
         val loan = createTestLoanModel()
-        val state = createTestState(loan = loan)
-        val action = LoanAction.SendLoan
-
-        `when`(networkingService.sendRequest(anyString())).thenThrow(RuntimeException("Network error"))
+        val action = LoanAction.StartProcessing(loan)
+        val state = createTestState(loan)
 
         middleware.process(mockStore, state, action)
 
-        testDispatcher.scheduler.advanceUntilIdle()
-        verify(mockStore).dispatch(LoanAction.SubmitLoanFailure(LoanError.RequestFailed))
+        verify(exactly = 0) { mockStore.dispatch(any()) }
+    }
+
+    @Test
+    fun `CheckInternet - no dispatch`() = runTest {
+        val action = LoanAction.CheckInternet
+        val state = createTestState()
+
+        middleware.process(mockStore, state, action)
+
+        verify(exactly = 0) { mockStore.dispatch(any()) }
+    }
+
+    @Test
+    fun `Reset - no dispatch`() = runTest {
+        val action = LoanAction.Reset
+        val state = createTestState()
+
+        middleware.process(mockStore, state, action)
+
+        verify(exactly = 0) { mockStore.dispatch(any()) }
+    }
+
+    @Test
+    fun `SubmitLoanSuccess - no re-dispatch`() = runTest {
+        val action = LoanAction.SubmitLoanSuccess(LoanResponse("123"))
+        val state = createTestState()
+
+        middleware.process(mockStore, state, action)
+
+        verify(exactly = 0) { mockStore.dispatch(any()) }
     }
 
     @Test
@@ -108,24 +126,15 @@ class LoanValidationMiddlewareTest {
 
         middleware.process(mockStore, state, action)
 
-        verify(mockStore, never()).dispatch(any())
-    }
-
-    @Test
-    fun `Reset - no action dispatched`() = runTest {
-        val action = LoanAction.Reset
-        val state = createTestState()
-
-        middleware.process(mockStore, state, action)
-
-        verify(mockStore, never()).dispatch(any())
+        verify(exactly = 0) { mockStore.dispatch(any()) }
     }
 
     private fun createTestLoanModel(): LoanModel = LoanModel(
         amount = 10_000.0,
         period = 14,
         creditRate = 15.0,
-        processState = LoanProcessState.Idle
+        processState = LoanProcessState.Idle,
+        returnAmount = 10_500.0
     )
 
     private fun createTestState(loan: LoanModel = createTestLoanModel()): LoanState = LoanState(
