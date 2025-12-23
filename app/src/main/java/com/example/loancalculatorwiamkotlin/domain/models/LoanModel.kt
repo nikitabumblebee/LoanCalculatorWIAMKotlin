@@ -3,6 +3,8 @@ package com.example.loancalculatorwiamkotlin.domain.models
 import java.time.LocalDate
 import java.util.Calendar
 import com.example.loancalculatorwiamkotlin.utils.roundedToTwoDecimalPlaces
+import android.content.Context
+import com.example.loancalculatorwiamkotlin.utils.PreferencesManager
 
 data class LoanModel(
     val id: String = java.util.UUID.randomUUID().toString(),
@@ -38,6 +40,21 @@ data class LoanModel(
             return baseDate.plusDays(period.toLong())
         }
     }
+}
+
+fun createInitialLoanModel(context: Context): LoanModel {
+    val amount = PreferencesManager.getLastAmount(context)
+    val period = PreferencesManager.getLastPeriod(context)
+    val creditRate = 15.0
+
+    return LoanModel(
+        amount = amount,
+        period = period,
+        creditRate = creditRate,
+        returnAmount = LoanModel.calculateReturnAmount(amount, period, creditRate),
+        returnDate = LoanModel.calculateReturnDate(period),
+        processState = LoanProcessState.Idle
+    )
 }
 
 sealed interface LoanProcessState {

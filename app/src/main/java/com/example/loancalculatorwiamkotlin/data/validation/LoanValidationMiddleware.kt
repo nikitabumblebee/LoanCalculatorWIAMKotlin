@@ -1,14 +1,14 @@
 package com.example.loancalculatorwiamkotlin.data.validation
 
-import android.content.SharedPreferences
+import android.content.Context
 import com.example.loancalculatorwiamkotlin.data.dto.LoanRequest
-import com.example.loancalculatorwiamkotlin.data.dto.LoanResponse
 import com.example.loancalculatorwiamkotlin.data.network.NetworkingService
 import com.example.loancalculatorwiamkotlin.domain.models.LoanError
 import com.example.loancalculatorwiamkotlin.domain.models.LoanModel
 import com.example.loancalculatorwiamkotlin.domain.models.LoanState
 import com.example.loancalculatorwiamkotlin.redux.LoanAction
 import com.example.loancalculatorwiamkotlin.redux.Store
+import com.example.loancalculatorwiamkotlin.utils.PreferencesManager
 import kotlinx.coroutines.delay
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -17,7 +17,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class LoanValidationMiddleware(
-    private val networkingService: NetworkingService
+    private val networkingService: NetworkingService,
+    private val context: Context
 ) {
 
     private object Constants {
@@ -96,7 +97,7 @@ class LoanValidationMiddleware(
     }
 
     private fun saveLastData(loanModel: LoanModel) {
-
-        // Здесь позже добавишь сохранение в SharedPreferences через отдельный helper
+        PreferencesManager.saveLastAmount(context, loanModel.amount)
+        PreferencesManager.saveLastPeriod(context, loanModel.period)
     }
 }

@@ -7,29 +7,30 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.loancalculatorwiamkotlin.domain.models.LoanError
-import com.example.loancalculatorwiamkotlin.domain.models.LoanModel
 import com.example.loancalculatorwiamkotlin.domain.models.LoanProcessState
 import com.example.loancalculatorwiamkotlin.domain.models.LoanState
 import com.example.loancalculatorwiamkotlin.redux.LoanAction
-import com.example.loancalculatorwiamkotlin.redux.Store
 import com.example.loancalculatorwiamkotlin.ui.components.ConverterSliderView
 import com.example.loancalculatorwiamkotlin.utils.formatAmount
 import com.example.loancalculatorwiamkotlin.utils.toDayMonthAndYear
 import kotlinx.coroutines.flow.StateFlow
 import android.util.Log
-import kotlinx.coroutines.flow.collect
 
 @Composable
 fun ConverterScreen(
     stateFlow: StateFlow<LoanState>,
     onAction: (LoanAction) -> Unit,
+    isDarkTheme: Boolean,
+    onThemeToggle: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by stateFlow.collectAsState()
@@ -98,7 +99,7 @@ fun ConverterScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFCF9))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -107,6 +108,22 @@ fun ConverterScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(40.dp)
         ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (isDarkTheme) "Dark theme" else "Light theme",
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(Modifier.width(8.dp))
+                Switch(
+                    checked = isDarkTheme,
+                    onCheckedChange = onThemeToggle
+                )
+            }
+
             // Amount Slider
             ConverterSliderView(
                 value = amountValue,

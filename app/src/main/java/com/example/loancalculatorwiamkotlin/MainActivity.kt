@@ -12,11 +12,16 @@ import com.example.loancalculatorwiamkotlin.ui.theme.LoanCalculatorWIAMKotlinThe
 import com.example.loancalculatorwiamkotlin.data.network.NetworkingService
 import com.example.loancalculatorwiamkotlin.data.validation.LoanValidationMiddleware
 import com.example.loancalculatorwiamkotlin.domain.models.LoanState
+import com.example.loancalculatorwiamkotlin.domain.models.createInitialLoanModel
 import com.example.loancalculatorwiamkotlin.redux.LoanAction
 import com.example.loancalculatorwiamkotlin.redux.Store
 import com.example.loancalculatorwiamkotlin.redux.loanReducer
 import com.example.loancalculatorwiamkotlin.ui.screens.ConverterScreen
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 class MainActivity : ComponentActivity() {
     private lateinit var store: Store<LoanState, LoanAction>
@@ -25,7 +30,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         try {
             val networkingService = NetworkingService.getInstance(this)
-            val validationMiddleware = LoanValidationMiddleware(networkingService)
+            val validationMiddleware = LoanValidationMiddleware(networkingService, this)
             val middleware: List<suspend (Store<LoanState, LoanAction>, LoanState, LoanAction) -> Unit> =
                 listOf(
                     { store, state, action ->
@@ -33,17 +38,27 @@ class MainActivity : ComponentActivity() {
                     }
                 )
 
+            val initialLoan = createInitialLoanModel(this)
+            val initialState = LoanState(
+                loan = initialLoan,
+                isInternetAvailable = true,
+                notifyOnRestoreInternetConnection = null
+            )
+
             store = Store(
-                initialState = LoanState(),
+                initialState = initialState,
                 reducer = ::loanReducer,
                 middleware = middleware
             )
 
             setContent {
-                LoanCalculatorWIAMKotlinTheme {
+                var isDarkTheme: Boolean by remember { mutableStateOf(false) }
+                LoanCalculatorWIAMKotlinTheme(darkTheme = isDarkTheme) {
                     ConverterScreen(
                         stateFlow = store.state,
-                        onAction = store::dispatch
+                        onAction = store::dispatch,
+                        isDarkTheme = isDarkTheme,
+                        onThemeToggle = { isDarkTheme = it }
                     )
                 }
             }
